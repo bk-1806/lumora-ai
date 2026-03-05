@@ -60,3 +60,10 @@ coverage/
 update_components.py
 run_update.py
 walkthrough_tmp.md
+
+# AI Models
+.model_cache/
+backend/.model_cache/
+*.bin
+*.pt
+*.model
