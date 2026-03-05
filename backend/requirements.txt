@@ -16,13 +16,9 @@ en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_
 fastapi==0.135.1
 filelock==3.25.0
 fsspec==2026.2.0
-google-ai-generativelanguage==0.6.15
-google-api-core>=2.30.0
-google-api-python-client==2.190.0
-google-auth==2.48.0
 google-auth-httplib2==0.3.0
-google-generativeai==0.8.6
 googleapis-common-protos==1.72.0
+groq
 grpcio
 grpcio-status
 h11==0.16.0
