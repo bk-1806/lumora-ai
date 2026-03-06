@@ -14,14 +14,22 @@ base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 cache_dir = os.path.join(base_dir, ".model_cache")
 os.makedirs(cache_dir, exist_ok=True)
 
-try:
-    similarity_model = SentenceTransformer(
-        "all-MiniLM-L6-v2",
-        cache_folder=cache_dir
-    )
-except Exception as e:
-    print(f"Warning: Could not load sentence-transformers model. {e}")
-    similarity_model = None
+similarity_model = None
+
+def get_similarity_model():
+    global similarity_model
+    if similarity_model is None:
+        try:
+            print("Loading sentence-transformers model...")
+            similarity_model = SentenceTransformer(
+                "all-MiniLM-L6-v2",
+                cache_folder=cache_dir
+            )
+            print("Model loaded successfully.")
+        except Exception as e:
+            print(f"Warning: Could not load sentence-transformers model. {e}")
+            similarity_model = False # Use False to indicate failed load so we don't keep retrying
+    return similarity_model
 
 
 # Words that are never meaningful ATS keywords (should not penalize score)
@@ -42,7 +50,8 @@ GENERIC_SCORING_WORDS = {
 @lru_cache(maxsize=32)
 def get_embedding(text: str):
 
-    if not similarity_model:
+    model = get_similarity_model()
+    if not model:
         return None
 
     cleaned = str(text).strip().lower()
