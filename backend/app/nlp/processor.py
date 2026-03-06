@@ -4,9 +4,15 @@ from collections import Counter
 
 try:
     import spacy
-    nlp = spacy.load("en_core_web_sm")
-except (ImportError, OSError):
-    print("Warning: spaCy model 'en_core_web_sm' not found.")
+    try:
+        nlp = spacy.load("en_core_web_sm")
+    except OSError:
+        import subprocess
+        print("Downloading spaCy model 'en_core_web_sm'...")
+        subprocess.run(["python", "-m", "spacy", "download", "en_core_web_sm"], check=True)
+        nlp = spacy.load("en_core_web_sm")
+except (ImportError, OSError) as e:
+    print(f"Warning: spaCy or model could not be loaded: {e}")
     nlp = None
 
 # Import the skill dictionary and normalization helpers
