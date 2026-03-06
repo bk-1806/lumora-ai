@@ -4,15 +4,11 @@ from collections import Counter
 
 try:
     import spacy
-    try:
-        nlp = spacy.load("en_core_web_sm")
-    except OSError:
-        import subprocess
-        print("Downloading spaCy model 'en_core_web_sm'...")
-        subprocess.run(["python", "-m", "spacy", "download", "en_core_web_sm"], check=True)
-        nlp = spacy.load("en_core_web_sm")
-except (ImportError, OSError) as e:
-    print(f"Warning: spaCy or model could not be loaded: {e}")
+    nlp = spacy.load("en_core_web_sm")
+except OSError:
+    raise RuntimeError("spaCy model en_core_web_sm not installed. Install during build.")
+except ImportError as e:
+    print(f"Warning: spaCy could not be loaded: {e}")
     nlp = None
 
 # Import the skill dictionary and normalization helpers
