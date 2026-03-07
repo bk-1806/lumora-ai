@@ -2,14 +2,40 @@ import re
 from typing import List
 from collections import Counter
 
-try:
-    import spacy
-    nlp = spacy.load("en_core_web_sm")
-except OSError:
-    raise RuntimeError("spaCy model en_core_web_sm not installed. Install during build.")
-except ImportError as e:
-    print(f"Warning: spaCy could not be loaded: {e}")
-    nlp = None
+# ─── Lazy spaCy model loader ──────────────────────────────────────────────────
+_nlp = None  # module-level sentinel — not loaded at import time
+
+def get_nlp():
+    """Return the spaCy model, loading it on first call only."""
+    global _nlp
+    if _nlp is None:
+        try:
+            import spacy
+            _nlp = spacy.load("en_core_web_sm")
+        except OSError:
+            raise RuntimeError("spaCy model en_core_web_sm not installed. Install during build.")
+        except ImportError as e:
+            print(f"Warning: spaCy not available: {e}")
+            _nlp = False  # False = failed, won't retry
+    return _nlp if _nlp else None
+
+# Keep a module-level alias for callers that import `nlp` directly
+# This is a property-like shim — evaluates lazily when accessed
+class _NlpProxy:
+    def __getattr__(self, name):
+        model = get_nlp()
+        if model is None:
+            raise AttributeError(f"spaCy model unavailable; cannot access .{name}")
+        return getattr(model, name)
+    def __call__(self, *args, **kwargs):
+        model = get_nlp()
+        if model is None:
+            return None
+        return model(*args, **kwargs)
+    def __bool__(self):
+        return get_nlp() is not None
+
+nlp = _NlpProxy()
 
 # Import the skill dictionary and normalization helpers
 from app.nlp.skill_dictionary import TECH_SKILLS, SKILL_VARIANTS, normalize_skill

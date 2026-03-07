@@ -3,7 +3,7 @@ import re
 from typing import List, Dict, Tuple
 from dotenv import load_dotenv
 from groq import Groq
-from app.nlp.processor import nlp
+from app.nlp.processor import get_nlp  # lazy — does NOT load spaCy on import
 
 # =========================
 # Load Environment Variables
@@ -105,8 +105,9 @@ def detect_weak_bullets(experience_text: str) -> List[str]:
             weak_bullets.append(bullet)
             continue
 
-        if nlp:
-            doc = nlp(bullet)
+        _spacy = get_nlp()
+        if _spacy:
+            doc = _spacy(bullet)
             has_verb = any(token.pos_ == "VERB" for token in doc)
             if not has_verb:
                 weak_bullets.append(bullet)
