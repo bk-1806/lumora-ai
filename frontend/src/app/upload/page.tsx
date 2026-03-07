@@ -58,7 +58,8 @@ export default function UploadPage() {
         formData.append("email", email);
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/analyze`, {
+            const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+            const res = await fetch(`${API_BASE}/api/analyze`, {
                 method: "POST",
                 body: formData,
             });
