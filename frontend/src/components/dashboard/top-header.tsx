@@ -6,9 +6,27 @@ import Image from "next/image"
 import { Upload, Bell, Search } from "lucide-react"
 import { useSearch } from "@/context/search-context"
 import Link from "next/link"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { useEffect, useState } from "react"
 
 export function TopHeader() {
   const { searchQuery, setSearchQuery } = useSearch()
+  const [stats, setStats] = useState({ uploads: 0, avg: 0 })
+  const [hasNewNotification, setHasNewNotification] = useState(true)
+
+  useEffect(() => {
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    fetch(`${API_BASE}/api/resume-history`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.data && data.data.length > 0) {
+          setStats({
+            uploads: data.data.length,
+            avg: Math.round(data.data.reduce((acc: any, curr: any) => acc + curr.ats_score, 0) / data.data.length)
+          });
+        }
+      }).catch(() => { })
+  }, [])
 
   return (
     <header
@@ -69,17 +87,53 @@ export function TopHeader() {
         <div className="mx-1 hidden h-6 w-px bg-border sm:block" />
 
         {/* Notification */}
-        <button className="relative flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
+        <button
+          onClick={() => setHasNewNotification(false)}
+          className="relative flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+        >
           <Bell className="size-4" />
-          <span className="absolute right-2 top-2 size-1.5 rounded-full bg-primary" />
+          {hasNewNotification && (
+            <span className="absolute right-2 top-2 size-1.5 rounded-full bg-primary" />
+          )}
         </button>
 
         {/* User Avatar */}
-        <Avatar className="size-8 border border-border">
-          <AvatarFallback className="text-xs font-semibold text-primary" style={{ backgroundColor: "#EEF2FF" }}>
-            LA
-          </AvatarFallback>
-        </Avatar>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Avatar className="size-8 border border-border cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all">
+              <AvatarFallback className="text-xs font-semibold text-primary" style={{ backgroundColor: "#EEF2FF" }}>
+                LA
+              </AvatarFallback>
+            </Avatar>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel className="font-normal">
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">User</p>
+                <p className="text-xs leading-none text-muted-foreground">user@example.com</p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>
+              <span className="flex items-center justify-between w-full">
+                <span>Uploads</span>
+                <span className="font-semibold text-primary">{stats.uploads}</span>
+              </span>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <span className="flex items-center justify-between w-full">
+                <span>Avg ATS Score</span>
+                <span className="font-semibold text-primary">{stats.avg}%</span>
+              </span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>Profile</DropdownMenuItem>
+            <DropdownMenuItem>Settings</DropdownMenuItem>
+            <DropdownMenuItem>Resume History</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="text-red-500">Log out</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   )

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useToast } from "@/components/ui/use-toast"
 
 const loadingMessages = [
     "Parsing resume...",
@@ -13,6 +14,7 @@ const loadingMessages = [
 
 export default function UploadPage() {
     const router = useRouter();
+    const { toast } = useToast();
     const [file, setFile] = useState<File | null>(null);
     const [jd, setJd] = useState('');
     const [email, setEmail] = useState('');
@@ -83,6 +85,27 @@ export default function UploadPage() {
             } catch (dbErr) {
                 console.warn("DB save failed (continuing):", dbErr);
             }
+
+            try {
+                const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+                await fetch(`${API_BASE}/api/resume-version`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        email: email,
+                        resume_text: data.data.optimized_resume_text || "",
+                        ats_score: data.data.final_ats_score || 0,
+                        metrics: data.data
+                    }),
+                });
+            } catch (vErr) {
+                console.warn("Version save failed:", vErr);
+            }
+
+            toast({
+                title: "Resume analysis completed successfully",
+                description: "Your ATS score and analysis metrics are ready.",
+            });
 
             router.push("/dashboard");
 

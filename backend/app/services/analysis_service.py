@@ -13,6 +13,7 @@ from app.llm import (
 from app.scoring import (
     calculate_keyword_match,
     calculate_semantic_similarity,
+    calculate_experience_relevance,
     detect_quantification,
     calculate_skill_density,
     check_formatting_compliance,
@@ -312,7 +313,7 @@ def process_resume_analysis(
 
     exp_text = structured_resume.get("experience", "")
 
-    experience_score = calculate_semantic_similarity(exp_text, jd_text)
+    experience_score = calculate_experience_relevance(exp_text, jd_text)
 
 
     quantification_score = detect_quantification(exp_text)
@@ -382,7 +383,7 @@ def process_resume_analysis(
 
     opt_exp_text = "\n".join([improved_bullets.get(b.strip(), b) for b in exp_text.split('\n')])
 
-    opt_experience_score = calculate_semantic_similarity(opt_exp_text, jd_text)
+    opt_experience_score = calculate_experience_relevance(opt_exp_text, jd_text)
 
     opt_quantification_score = detect_quantification(opt_exp_text)
 

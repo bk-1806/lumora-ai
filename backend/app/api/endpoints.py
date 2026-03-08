@@ -120,3 +120,24 @@ async def copilot_chat(request: CopilotChatRequest):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# New: History and Versions Endpoints
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.get("/resume-history")
+async def get_resume_history(email: Optional[str] = None):
+    history = db_client.get_analysis_history(email)
+    return {"status": "success", "data": history}
+
+@router.get("/resume-versions")
+async def get_resume_versions(email: Optional[str] = None):
+    versions = db_client.get_resume_versions(email)
+    return {"status": "success", "data": versions}
+
+@router.post("/resume-version")
+async def save_resume_version(data: dict):
+    email = data.get("email", "unknown")
+    version = db_client.save_resume_version(email, data)
+    return {"status": "success", "data": version}

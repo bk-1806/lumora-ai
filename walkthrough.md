@@ -1,38 +1,35 @@
-# ResumeAI Walkthrough: Optimized Resume Builder
+# Lumora AI Audit and Upgrade Walkthrough
 
-I have securely implemented the **Optimized Resume Builder** following your explicit architectural directives. The result is a heavily fortified, deterministic system that fully eliminates LLM hallucination risk.
+## Changes Made
 
-## Backend Changes (Deterministic Architecture)
+### 1. ATS Engine Fixes
+- **Semantic Similarity & Experience Relevance**: The `0%` metrics bug has been fixed. The strict check for `similarity_model` in `calculate_semantic_similarity` was causing early exits; this was removed to properly invoke lazy loading.
+- **Model Lazy Loading**: Removed the `cache_folder` parameter from `SentenceTransformer("all-MiniLM-L6-v2")` to ensure memory-based loading without triggering file system permission errors on restrictive platforms like Railway.
 
-### 1. `refine_summary` Addition (`llm/engine.py`)
-- We inserted a dedicated `refine_summary` pipeline.
-- It receives the candidate's existing summary alongside the top JD keywords.
-- The prompt strictly forbids the creation of false experiences or non-existent tools, instructing Gemini to gently weave matching keywords into the existing narrative in 2-4 sentences.
+### 2. Resume Copilot Connection
+- Updated the frontend fetch path in `resume-copilot.tsx` to dynamically pull from `NEXT_PUBLIC_API_URL` rather than pointing statically to localhost.
 
-### 2. `build_optimized_resume_text` Pipeline (`analysis_service.py`)
-Rather than relying on the LLM to write out the whole resume and praying it keeps the correct format:
-- We built a pure Python reconstructor that maps over the original `structured_resume` JSON components.
-- It deterministically writes the standard ATS-safe headers (Summary, Skills, Experience, etc.) with physical dividers (`---`).
-- When parsing `experience`, it streams line-by-line. If a specific bullet point is detected inside the `improved_bullets` dictionary mapped by the LLM earlier, it swaps it seamlessly out. If no rewrite exists, it places the original text exactly as-is.
+### 3. Backend Endpoints (History & Versions)
+- **`POST /api/resume-version`**: Added a new endpoint to programmatically save versions containing the parsed output and calculated ATS metrics.
+- **`GET /api/resume-versions`**: Added a new endpoint to fetch analysis history as discrete versions. 
+- **`GET /api/resume-history`**: Supported the existing frontend requirements directly through the backend mock database.
+- Upgraded `mock_client.py` to correctly map state changes for these routes.
 
-### 3. Re-Scoring Accuracy
-- In order to produce an honest metric of the improvement (and to prevent arbitrary inflation), we actually pass the newly rebuilt `optimized_text` back through `calculate_semantic_similarity` and `detect_quantification`.
-- We calculate the precise mathematical difference and output it as the `improvement_delta`.
-- The entire payload is routed back to the frontend with `before_score` and `after_score`.
+### 4. Frontend Application Integration
+- **Resume History view**: Wired `<ResumeHistory />` to the new `api/resume-history` endpoint.
+- **Resume Versions UI**: Engineered and mapped a new visual component `<ResumeVersions />` underneath the optimized resume view to show timelines and snapshot ATS scores.
+- **Analysis Completion Notification**: Implemented a global React Toaster notification (`UseToast`) triggered dynamically after uploading and analyzing documents.
+- **Profile Menu**: Repurposed the top-right header avatar into an interactive Dropdown Menu. It automatically mounts metadata like upload scan count and aggregate ATS score benchmarks.
 
-## Frontend Changes (Next.js UX)
+## Validation Results
+All code components requested in the audit have been engineered and mapped structurally. State and API fetch commands now mirror across the frontend and backend boundaries dynamically via environment variables (`NEXT_PUBLIC_API_URL`).
 
-### `dashboard/page.tsx` Addition
-A brand new container named **Optimized Resume (Ready to Copy)** now natively conditionally mounts only if the optimization process completes.
-- **Copy Button:** Powered by `navigator.clipboard.writeText()`, it triggers an elegant "Copied!" confirmation swap state that lasts for 2 seconds before resetting.
-- **Formatting:** Handled natively with `whitespace-pre-wrap` to guarantee exact indentations and line-breaks pull directly into word processors perfectly.
-- **Disclaimer:** The requested legal constraint message lies directly beneath the viewport.
-
----
-
-### How To Experience The Full Journey
-1. Spin up the cluster: `npm run dev` and `uvicorn main:app`.
-2. Push a standard un-optimized Resume into the system alongside a tech-heavy Job Description.
-3. Observe the loading sequence complete.
-4. Witness the `Final ATS Score` accurately tracking the mathematical `after_score` delta against the original.
-5. Scroll below the specific bullet improvements to see the newly assembled plain-text resume securely ready to be placed on a clipboard.
+## How to Verify
+1. Start the FastAPI backend server (`uvicorn main:app --reload` inside the `backend` folder).
+2. Start the Next.js frontend server (`npm run dev` inside the `frontend` folder).
+3. Open the app and upload a test Resume and JD.
+4. Verify the success toast notification appears in the bottom right corner when analysis is complete.
+5. In the dashboard, confirm that Semantic Similarity and Experience Relevance are calculating (no longer 0%).
+6. Ask the Resume Copilot a question to confirm connection stability.
+7. Click the avatar in the top right to confirm statistics load in the dropdown.
+8. Validate the new "Resume Versions" component lists the snapshot of the document's analysis timeline.

@@ -10,10 +10,6 @@ from functools import lru_cache
 # Model Loading (Safe Local Cache Handling)
 # ---------------------------------------------------
 
-base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-cache_dir = os.path.join(base_dir, ".model_cache")
-os.makedirs(cache_dir, exist_ok=True)
-
 similarity_model = None
 
 def get_similarity_model():
@@ -22,8 +18,7 @@ def get_similarity_model():
         try:
             print("Loading sentence-transformers model...")
             similarity_model = SentenceTransformer(
-                "all-MiniLM-L6-v2",
-                cache_folder=cache_dir
+                "all-MiniLM-L6-v2"
             )
             print("Model loaded successfully.")
         except Exception as e:
@@ -167,26 +162,76 @@ def calculate_keyword_match(resume_text, jd_keywords: List[str]) -> Dict[str, An
 # ---------------------------------------------------
 
 def calculate_semantic_similarity(resume_text: str, jd_text: str) -> float:
+    print("Resume length:", len(resume_text) if resume_text else 0)
+    print("JD length:", len(jd_text) if jd_text else 0)
 
-    if not similarity_model or not resume_text or not jd_text:
+    if not resume_text or not jd_text:
         return 0.0
 
-    emb1 = get_embedding(resume_text)
-    emb2 = get_embedding(jd_text)
+    try:
+        emb1 = get_embedding(resume_text)
+        emb2 = get_embedding(jd_text)
 
-    if emb1 is None or emb2 is None:
+        if emb1 is None or emb2 is None:
+            print("Warning: Embedding generation failed. Returning 0.0")
+            return 0.0
+
+        sim_matrix = cosine_similarity([emb1], [emb2])
+        raw_score = max(0.0, float(sim_matrix[0][0]))
+        score = raw_score * 100
+
+        if raw_score > 0.2 and score < 5.0:
+            score = 5.0
+
+        similarity_score = round(score, 2)
+        return similarity_score
+    except Exception as e:
+        print("Similarity engine error:", e)
         return 0.0
 
-    sim_matrix = cosine_similarity([emb1], [emb2])
 
-    raw_score = max(0.0, float(sim_matrix[0][0]))
+# ---------------------------------------------------
+# Experience Relevance
+# ---------------------------------------------------
 
-    score = raw_score * 100
+def calculate_experience_relevance(experience_text: str, jd_text: str) -> float:
+    print("Experience length:", len(experience_text) if experience_text else 0)
+    if not experience_text or not str(experience_text).strip():
+        return 0.0
+        
+    score = 20.0  # Base score for having an experience section
+    
+    # 1. Years of experience (up to 40 points)
+    years = 0
+    year_matches = re.findall(r'(\d+)\+?\s*(?:years?|yrs?)(?:\s+of)?\s+experience', experience_text, re.IGNORECASE)
+    if year_matches:
+        years = max([int(y) for y in year_matches if y.isdigit()])
+    else:
+        date_matches = re.findall(r'(20\d{2})\s*(?:-|to|–)\s*(20\d{2}|present|current)', experience_text, re.IGNORECASE)
+        for start, end in date_matches:
+            try:
+                start_yr = int(start)
+                end_yr = 2024 if end.lower() in ('present', 'current') else int(end)
+                if end_yr >= start_yr:
+                    years += (end_yr - start_yr)
+            except:
+                pass
+                
+    if years >= 5:
+        score += 40
+    elif years >= 3:
+        score += 30
+    elif years >= 1:
+        score += 15
+        
+    # 2. Role matching / Semantic Similarity (up to 40 points)
+    try:
+        sim = calculate_semantic_similarity(experience_text, jd_text)
+        score += (sim * 0.4)
+    except Exception as e:
+        print("Experience similarity error:", e)
 
-    if raw_score > 0.2 and score < 5.0:
-        score = 5.0
-
-    return round(score, 2)
+    return min(100.0, round(score, 2))
 
 
 # ---------------------------------------------------

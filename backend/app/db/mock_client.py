@@ -7,7 +7,8 @@ mock_db = {
     "users": {},
     "resumes": {},
     "job_descriptions": {},
-    "analysis_results": {}
+    "analysis_results": {},
+    "resume_versions": {}
 }
 
 class MockDBClient:
@@ -15,7 +16,7 @@ class MockDBClient:
         self.db = mock_db
 
     def create_user(self, email: str) -> Dict[str, Any]:
-        user_id = str(uuid.uuid4())
+        user_id = email
         user = {
             "id": user_id,
             "email": email,
@@ -76,6 +77,38 @@ class MockDBClient:
         }
         self.db["analysis_results"][result_id] = result
         return result
+
+    def get_analysis_history(self, user_id: str = None) -> List[Dict[str, Any]]:
+        history = []
+        for res in self.db["analysis_results"].values():
+            resume = self.db["resumes"].get(res["resume_id"])
+            if not user_id or (resume and resume.get("user_id") == user_id):
+                history.append({
+                    "id": res["id"],
+                    "ats_score": res.get("final_ats_score", 0),
+                    "resume_name": "Resume Scan",
+                    "created_at": res.get("created_at"),
+                    "result": res
+                })
+        return sorted(history, key=lambda x: x["created_at"], reverse=True)
+
+    def save_resume_version(self, user_id: str, version_data: Dict[str, Any]) -> Dict[str, Any]:
+        v_id = str(uuid.uuid4())
+        version = {
+            "id": v_id,
+            "user_id": user_id,
+            "timestamp": datetime.utcnow().isoformat(),
+            **version_data
+        }
+        self.db["resume_versions"][v_id] = version
+        return version
+
+    def get_resume_versions(self, user_id: str = None) -> List[Dict[str, Any]]:
+        versions = []
+        for v in self.db["resume_versions"].values():
+            if not user_id or v.get("user_id") == user_id:
+                versions.append(v)
+        return sorted(versions, key=lambda x: x["timestamp"], reverse=True)
 
 # Singleton client instance
 db_client = MockDBClient()

@@ -15,6 +15,7 @@ import { ResumeAnalysis } from "@/components/dashboard/resume-analysis"
 import { InterviewPrep } from "@/components/dashboard/interview-prep"
 import { ResumeCopilot } from "@/components/dashboard/resume-copilot"
 import { OptimizedResume } from "@/components/dashboard/optimized-resume"
+import { ResumeVersions } from "@/components/dashboard/resume-versions"
 import { SearchProvider, useSearch } from "@/context/search-context"
 
 // Helper: does this section contain searchQuery?
@@ -140,7 +141,9 @@ function DashboardContent({ result: initialResult }: { result: AnalysisResult })
                         {/* Optimized Resume */}
                         {resumeVisible && (
                             <section id="optimized-resume">
-                                <div id="resume-versions"></div>
+                                <div id="resume-versions" className="mb-8">
+                                    <ResumeVersions />
+                                </div>
                                 <OptimizedResume result={result} searchQuery={searchQuery} />
                             </section>
                         )}

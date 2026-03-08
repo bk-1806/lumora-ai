@@ -1,6 +1,7 @@
 from .engines import (
     calculate_keyword_match,
     calculate_semantic_similarity,
+    calculate_experience_relevance,
     detect_quantification,
     calculate_skill_density,
     check_formatting_compliance,
@@ -10,6 +11,7 @@ from .engines import (
 __all__ = [
     "calculate_keyword_match",
     "calculate_semantic_similarity",
+    "calculate_experience_relevance",
     "detect_quantification",
     "calculate_skill_density",
     "check_formatting_compliance",

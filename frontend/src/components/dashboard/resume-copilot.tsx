@@ -59,7 +59,8 @@ export function ResumeCopilot({ result }: { result: AnalysisResult }) {
     setInput("")
     setIsTyping(true)
 
-    fetch("http://localhost:8000/api/copilot-chat", {
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+    fetch(`${API_BASE}/api/copilot-chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -79,23 +80,23 @@ export function ResumeCopilot({ result }: { result: AnalysisResult }) {
         missing_keywords: result.missing_keywords || []
       })
     })
-    .then(res => res.json())
-    .then(data => {
-      setIsTyping(false);
-      setMessages(prev => [...prev, {
-        role: "assistant",
-        content: data.response || "Sorry, I encountered an error.",
-        timestamp: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
-      }]);
-    })
-    .catch(err => {
-      setIsTyping(false);
-      setMessages(prev => [...prev, {
-        role: "assistant",
-        content: "Error connecting to Resume Copilot.",
-        timestamp: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
-      }]);
-    });
+      .then(res => res.json())
+      .then(data => {
+        setIsTyping(false);
+        setMessages(prev => [...prev, {
+          role: "assistant",
+          content: data.response || "Sorry, I encountered an error.",
+          timestamp: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+        }]);
+      })
+      .catch(err => {
+        setIsTyping(false);
+        setMessages(prev => [...prev, {
+          role: "assistant",
+          content: "Error connecting to Resume Copilot.",
+          timestamp: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+        }]);
+      });
   }
 
   return (

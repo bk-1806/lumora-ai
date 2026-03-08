@@ -23,7 +23,8 @@ export function ResumeHistory({ onSelect }: ResumeHistoryProps) {
     const [selectedId, setSelectedId] = useState<string | null>(null)
 
     useEffect(() => {
-        fetch("/api/analysis-history")
+        const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        fetch(`${API_BASE}/api/resume-history`)
             .then((r) => r.json())
             .then((res) => {
                 if (res.data) setHistory(res.data)
