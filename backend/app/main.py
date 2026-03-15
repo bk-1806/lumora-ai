@@ -22,7 +22,11 @@ app.add_middleware(
 def read_root():
     return {"message": "Welcome to the ResumeAI API"}
 
-from app.routers import guest, auth
+@app.on_event("startup")
+async def startup():
+    print("Lumora backend started - AI models will load lazily on first request")
+
+from .routers import guest, auth
 
 app.include_router(guest.router, prefix="/api")
 app.include_router(auth.router, prefix="/api/auth")
@@ -30,4 +34,4 @@ app.include_router(auth.router, prefix="/api/auth")
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("main:app", host="0.0.0.0", port=port)
+    uvicorn.run("app.main:app", host="0.0.0.0", port=port, reload=True)

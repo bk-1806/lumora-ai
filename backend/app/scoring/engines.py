@@ -1,7 +1,6 @@
 import re
 import os
 from typing import List, Dict, Any
-from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 from functools import lru_cache
 
@@ -10,21 +9,28 @@ from functools import lru_cache
 # Model Loading (Safe Local Cache Handling)
 # ---------------------------------------------------
 
-similarity_model = None
+model = None
 
-def get_similarity_model():
-    global similarity_model
-    if similarity_model is None:
+def get_embedding_model():
+    """
+    Lazy loader for SentenceTransformer to avoid heavy downloads during build.
+    Uses the lighter all-MiniLM-L6-v2 (~90MB).
+    """
+    global model
+    if model is None:
         try:
-            print("Loading sentence-transformers model...")
-            similarity_model = SentenceTransformer(
-                "all-mpnet-base-v2"
-            )
+            print("Loading sentence-transformers model (all-MiniLM-L6-v2)...")
+            from sentence_transformers import SentenceTransformer
+            model = SentenceTransformer("all-MiniLM-L6-v2")
             print("Model loaded successfully.")
         except Exception as e:
             print(f"Warning: Could not load sentence-transformers model. {e}")
-            similarity_model = False # Use False to indicate failed load so we don't keep retrying
-    return similarity_model
+            return None
+    return model
+
+def get_similarity_model():
+    # Helper to maintain compatibility if needed elsewhere
+    return get_embedding_model()
 
 
 # Words that are never meaningful ATS keywords (should not penalize score)
@@ -45,7 +51,7 @@ GENERIC_SCORING_WORDS = {
 @lru_cache(maxsize=32)
 def get_embedding(text: str):
 
-    model = get_similarity_model()
+    model = get_embedding_model()
     if not model:
         return None
 
@@ -54,7 +60,7 @@ def get_embedding(text: str):
     if not cleaned:
         return None
 
-    return similarity_model.encode(cleaned)
+    return model.encode(cleaned)
 
 
 # ---------------------------------------------------
