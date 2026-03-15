@@ -1,76 +1,34 @@
-import { Sidebar } from "@/components/dashboard/sidebar"
-import { TopHeader } from "@/components/dashboard/top-header"
-import { AtsScorePanel } from "@/components/dashboard/ats-score-panel"
-import { ResumeMatchRadar } from "@/components/dashboard/resume-match-radar"
-import { AnalysisMetrics } from "@/components/dashboard/analysis-metrics"
-import { SkillGapAnalysis } from "@/components/dashboard/skill-gap-analysis"
-import { ResumeAnalysis } from "@/components/dashboard/resume-analysis"
-import { InterviewPrep } from "@/components/dashboard/interview-prep"
-import { ResumeCopilot } from "@/components/dashboard/resume-copilot"
-import { OptimizedResume } from "@/components/dashboard/optimized-resume"
+"use client";
 
-export default function DashboardPage() {
+import { useRouter } from 'next/navigation';
+
+export default function LandingPage() {
+  const router = useRouter();
+
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      {/* Sidebar */}
-      <Sidebar />
-
-      {/* Main Area */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Top Header */}
-        <TopHeader />
-
-        {/* Scrollable Content */}
-        <main className="flex-1 overflow-y-auto">
-          <div className="mx-auto max-w-7xl space-y-8 p-6 lg:p-8">
-            {/* Career Intelligence Score + Radar Chart */}
-            <section>
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-                <div className="lg:col-span-2">
-                  <AtsScorePanel />
-                </div>
-                <div className="lg:col-span-3">
-                  <ResumeMatchRadar />
-                </div>
-              </div>
-            </section>
-
-            {/* Analysis Metrics */}
-            <section>
-              <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Analysis Metrics
-              </h2>
-              <AnalysisMetrics />
-            </section>
-
-            {/* Skill Gap Analysis */}
-            <section>
-              <SkillGapAnalysis />
-            </section>
-
-            {/* Resume Strengths & Weaknesses */}
-            <section>
-              <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Resume Strengths & Weaknesses
-              </h2>
-              <ResumeAnalysis />
-            </section>
-
-            {/* Interview Prep + Copilot */}
-            <section>
-              <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-                <InterviewPrep />
-                <ResumeCopilot />
-              </div>
-            </section>
-
-            {/* Optimized Resume */}
-            <section>
-              <OptimizedResume />
-            </section>
-          </div>
-        </main>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground">
+      <div className="max-w-3xl text-center space-y-8 p-6">
+        <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight">
+          Beat the ATS Algorithm
+        </h1>
+        <p className="text-xl text-muted-foreground">
+          Upload your resume and simulate how enterprise applicant tracking systems evaluate your application.
+        </p>
+        <div className="flex items-center justify-center gap-4">
+          <button
+            onClick={() => router.push('/analyze')}
+            className="px-8 py-4 rounded-full bg-blue-600 text-white font-bold hover:bg-blue-700 transition cursor-pointer"
+          >
+            Upload Resume
+          </button>
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="px-8 py-4 rounded-full border text-foreground font-bold hover:bg-secondary transition cursor-pointer"
+          >
+            Dashboard
+          </button>
+        </div>
       </div>
     </div>
-  )
+  );
 }

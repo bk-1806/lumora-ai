@@ -3,9 +3,11 @@
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 import { Upload, ClipboardPaste, Bell, Search, Menu } from "lucide-react"
 
 export function TopHeader() {
+  const router = useRouter()
   return (
     <header
       className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-card px-6"
@@ -39,6 +41,7 @@ export function TopHeader() {
       {/* Right - Actions */}
       <div className="flex items-center gap-3">
         <Button
+          onClick={() => router.push("/analyze")}
           size="sm"
           className="gap-2 text-primary-foreground"
           style={{

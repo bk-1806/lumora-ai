@@ -8,15 +8,19 @@ import { useSearch } from "@/context/search-context"
 import Link from "next/link"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useEffect, useState } from "react"
+import { useAuth } from "@/context/auth-context"
 
 export function TopHeader() {
   const { searchQuery, setSearchQuery } = useSearch()
+  const { user, setShowAuthModal, signOut } = useAuth()
   const [stats, setStats] = useState({ uploads: 0, avg: 0 })
   const [hasNewNotification, setHasNewNotification] = useState(true)
 
   useEffect(() => {
+    if (!user) return; // Only fetch if authenticated
+
     const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-    fetch(`${API_BASE}/api/resume-history`)
+    fetch(`${API_BASE}/api/auth/resume-history?user_id=${user.id}`)
       .then(res => res.json())
       .then(data => {
         if (data.data && data.data.length > 0) {
@@ -26,7 +30,7 @@ export function TopHeader() {
           });
         }
       }).catch(() => { })
-  }, [])
+  }, [user])
 
   return (
     <header
@@ -70,7 +74,7 @@ export function TopHeader() {
 
       {/* Right - Actions */}
       <div className="flex items-center gap-3">
-        <Link href="/upload">
+        <Link href="/analyze">
           <Button
             size="sm"
             className="gap-2 text-primary-foreground"
@@ -97,43 +101,46 @@ export function TopHeader() {
           )}
         </button>
 
-        {/* User Avatar */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Avatar className="size-8 border border-border cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all">
-              <AvatarFallback className="text-xs font-semibold text-primary" style={{ backgroundColor: "#EEF2FF" }}>
-                LA
-              </AvatarFallback>
-            </Avatar>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel className="font-normal">
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">User</p>
-                <p className="text-xs leading-none text-muted-foreground">user@example.com</p>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <span className="flex items-center justify-between w-full">
-                <span>Uploads</span>
-                <span className="font-semibold text-primary">{stats.uploads}</span>
-              </span>
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <span className="flex items-center justify-between w-full">
-                <span>Avg ATS Score</span>
-                <span className="font-semibold text-primary">{stats.avg}%</span>
-              </span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuItem>Resume History</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-red-500">Log out</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {/* User Avatar or Auth Button */}
+        {user ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Avatar className="size-8 border border-border cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all">
+                <AvatarFallback className="text-xs font-semibold text-primary" style={{ backgroundColor: "#EEF2FF" }}>
+                  {user.email?.charAt(0).toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">User</p>
+                  <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <span className="flex items-center justify-between w-full">
+                  <span>Uploads</span>
+                  <span className="font-semibold text-primary">{stats.uploads}</span>
+                </span>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <span className="flex items-center justify-between w-full">
+                  <span>Avg ATS Score</span>
+                  <span className="font-semibold text-primary">{stats.avg}%</span>
+                </span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <Link href="/dashboard"><DropdownMenuItem className="cursor-pointer">Dashboard</DropdownMenuItem></Link>
+              <DropdownMenuItem onClick={signOut} className="text-red-500 cursor-pointer">Log out</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <Button variant="outline" size="sm" onClick={() => setShowAuthModal(true)}>
+            Log In
+          </Button>
+        )}
       </div>
     </header>
   )

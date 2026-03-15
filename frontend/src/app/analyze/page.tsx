@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from "@/components/ui/use-toast"
+import { DashboardContent } from '../dashboard/page';
+import { SearchProvider } from "@/context/search-context";
 
 const loadingMessages = [
     "Parsing resume...",
@@ -12,7 +14,7 @@ const loadingMessages = [
     "Optimizing weak bullet points..."
 ];
 
-export default function UploadPage() {
+export default function AnalyzePage() {
     const router = useRouter();
     const { toast } = useToast();
     const [file, setFile] = useState<File | null>(null);
@@ -21,6 +23,7 @@ export default function UploadPage() {
     const [isUploading, setIsUploading] = useState(false);
     const [loadingStep, setLoadingStep] = useState(0);
     const [error, setError] = useState<string | null>(null);
+    const [analysisResult, setAnalysisResult] = useState<any>(null);
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
@@ -57,57 +60,39 @@ export default function UploadPage() {
         const formData = new FormData();
         formData.append("resume", file);
         formData.append("job_description", jd);
-        formData.append("email", email);
+        if (email) {
+            formData.append("email", email);
+        }
 
         try {
+            console.log("Sending Analysis Request:", { filename: file.name, email });
             const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
             const res = await fetch(`${API_BASE}/api/analyze`, {
                 method: "POST",
                 body: formData,
             });
 
+            console.log("Analysis Request completed with status:", res.status);
             const data = await res.json();
+            console.log("Analysis Payload Response:", data);
 
             if (!res.ok) {
+                console.error("Analysis Request Failed:", data);
                 throw new Error(data.detail || "Analysis failed due to server error");
             }
 
-            // Store results in localStorage (fallback)
+            // Store results in localStorage for the results page to pick up (Guest/Transient mode)
             localStorage.setItem("analysis_result", JSON.stringify(data.data));
-
-            // Persist to database
-            try {
-                await fetch("/api/save-analysis", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(data.data),
-                });
-            } catch (dbErr) {
-                console.warn("DB save failed (continuing):", dbErr);
-            }
-
-            try {
-                const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-                await fetch(`${API_BASE}/api/resume-version`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        email: email,
-                        resume_text: data.data.optimized_resume_text || "",
-                        ats_score: data.data.final_ats_score || 0,
-                        metrics: data.data
-                    }),
-                });
-            } catch (vErr) {
-                console.warn("Version save failed:", vErr);
-            }
+            localStorage.setItem("analysis_filename", file.name);
+            localStorage.setItem("analysis_jd", jd);
 
             toast({
                 title: "Resume analysis completed successfully",
                 description: "Your ATS score and analysis metrics are ready.",
             });
 
-            router.push("/dashboard");
+            setAnalysisResult(data.data);
+            window.scrollTo({ top: 0, behavior: "smooth" });
 
         } catch (err: any) {
             setError(err.message || "An unexpected error occurred");
@@ -115,6 +100,14 @@ export default function UploadPage() {
             setIsUploading(false);
         }
     };
+
+    if (analysisResult) {
+        return (
+            <SearchProvider>
+                <DashboardContent result={analysisResult} />
+            </SearchProvider>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-background text-foreground flex flex-col pt-16">

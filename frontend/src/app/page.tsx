@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import Image from 'next/image';
+import { LandingNav } from '@/components/ui/landing-nav';
 
 export const metadata: Metadata = {
   title: 'Lumora AI - Intelligent ATS Simulation',
@@ -14,29 +14,7 @@ export default function Home() {
       style={{ background: 'linear-gradient(135deg, #f8fbff 0%, #eef3ff 50%, #e9ecff 100%)' }}
     >
       {/* Navigation */}
-      <nav className="border-b border-[#d0d8ff]/50 bg-white/60 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-2">
-              <Image
-                src="/lumora-logo.png"
-                alt="Lumora AI"
-                width={36}
-                height={36}
-                className="rounded-lg object-contain shadow-[0_0_15px_rgba(124,140,255,0.4)]"
-              />
-              <span className="font-bold text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-muted-foreground">
-                Lumora AI
-              </span>
-            </div>
-            <div className="flex gap-4">
-              <Link href="/upload" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200">
-                Try Now
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <LandingNav />
 
       {/* Hero Section */}
       <main className="relative overflow-hidden">
@@ -63,7 +41,7 @@ export default function Home() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link
-                href="/upload"
+                href="/analyze"
                 className="px-8 py-4 rounded-full text-white font-bold transition-all duration-300 transform hover:scale-105 shadow-[0_0_20px_rgba(124,140,255,0.3)] flex items-center gap-2 group bg-[#7c8cff] hover:bg-[#5fa9ff]"
               >
                 Scan Your Resume

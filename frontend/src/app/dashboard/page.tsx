@@ -25,7 +25,7 @@ function sectionMatches(texts: string[], query: string): boolean {
     return texts.some(t => t?.toLowerCase().includes(q))
 }
 
-function DashboardContent({ result: initialResult }: { result: AnalysisResult }) {
+export function DashboardContent({ result: initialResult }: { result: AnalysisResult }) {
     const router = useRouter()
     const [result, setResult] = useState<AnalysisResult>(initialResult)
     const { searchQuery } = useSearch()
@@ -155,23 +155,56 @@ function DashboardContent({ result: initialResult }: { result: AnalysisResult })
     )
 }
 
+import { useAuth } from '@/context/auth-context'
+
 export default function DashboardPage() {
     const router = useRouter()
+    const { user, loading } = useAuth()
     const [result, setResult] = useState<AnalysisResult | null>(null)
 
     useEffect(() => {
-        const data = localStorage.getItem("analysis_result")
-        if (!data) {
-            router.push("/upload")
-            return
+        if (!loading && !user) {
+            router.push("/")
         }
-        setResult(JSON.parse(data))
-    }, [router])
+    }, [user, loading, router])
 
-    if (!result) {
+    useEffect(() => {
+        const data = localStorage.getItem("analysis_result")
+        if (data) {
+            setResult(JSON.parse(data))
+        }
+    }, [])
+
+    if (loading) {
         return (
             <div className="flex h-screen items-center justify-center bg-background">
                 <div className="size-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            </div>
+        )
+    }
+
+    if (!user) return null;
+
+    if (!result) {
+        return (
+            <div className="flex h-screen overflow-hidden bg-background">
+                <Sidebar onHistorySelect={(r) => setResult(r)} />
+
+                <div className="flex flex-1 flex-col overflow-hidden">
+                    <TopHeader />
+                    <main className="flex-1 overflow-y-auto relative flex items-center justify-center">
+                        <div className="text-center p-8 max-w-md">
+                            <h2 className="text-2xl font-bold mb-4">No Analysis Selected</h2>
+                            <p className="text-muted-foreground mb-8">Select a previous analysis from your history in the sidebar, or run a new simulation.</p>
+                            <button 
+                                onClick={() => router.push('/analyze')}
+                                className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
+                            >
+                                Run New Analysis
+                            </button>
+                        </div>
+                    </main>
+                </div>
             </div>
         )
     }

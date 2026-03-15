@@ -12,7 +12,7 @@ app = FastAPI(
 # Configure CORS for frontend access
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins (e.g., Vercel frontend)
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -22,10 +22,10 @@ app.add_middleware(
 def read_root():
     return {"message": "Welcome to the ResumeAI API"}
 
-from app.api import endpoints
+from app.routers import guest, auth
 
-# Include routers
-app.include_router(endpoints.router, prefix="/api")
+app.include_router(guest.router, prefix="/api")
+app.include_router(auth.router, prefix="/api/auth")
 
 
 if __name__ == "__main__":
