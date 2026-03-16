@@ -11,10 +11,10 @@ sentence-transformers==2.6.1
 spacy==3.7.2
 pydantic-settings
 python-dotenv
-supabase
+supabase==2.5.3
 pdfplumber
 python-docx
 scikit-learn
 numpy
-httpx<0.26
+httpx>=0.26,<0.29
 https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
