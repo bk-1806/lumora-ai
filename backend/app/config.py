@@ -1,23 +1,38 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
+import os
 
 class Settings(BaseSettings):
-    SUPABASE_URL: str
-    SUPABASE_KEY: str
-    GROQ_API_KEY: str
+    # Required settings
+    SUPABASE_URL: str = ""
+    SUPABASE_KEY: str = ""
+    GROQ_API_KEY: str = ""
     PORT: int = 8000
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore"
+    )
+
+settings = Settings()
+
+# Diagnostic logging (obfuscated for security)
+def _log_env_status():
+    print("--- Environment Configuration Check ---")
+    vars_to_check = ["SUPABASE_URL", "SUPABASE_KEY", "GROQ_API_KEY"]
+    for var in vars_to_check:
+        val = str(getattr(settings, var, ""))
+        if not val:
+            print(f"❌ {var} is MISSING or EMPTY")
+        elif len(val) < 5:
+            print(f"⚠️ {var} is suspiciously short: {val}")
+        else:
+            # Safe masking
+            masked = f"{val[:10]}...{val[-4:]}" if len(val) > 15 else "***"
+            print(f"✅ {var} is set: {masked}")
+    print("---------------------------------------")
 
 try:
-    settings = Settings()
+    _log_env_status()
 except Exception as e:
-    print(f"Failed to load settings: {e}")
-    # Fallback to avoid breaking at compile time if .env missing during testing
-    import os
-    class DummySettings:
-        SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
-        SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")
-        GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
-        PORT = int(os.environ.get("PORT", "8000"))
-    settings = DummySettings()
+    print(f"Diagnostic error: {e}")
