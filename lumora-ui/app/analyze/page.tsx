@@ -26,8 +26,10 @@ export default function AnalyzePage() {
         // Add dummy email to align with backend validation format if needed
         formData.append("email", "guest@example.com");
 
+        const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://lumora-ai-production.up.railway.app"
+
         try {
-            const res = await fetch(`http://localhost:8000/api/analyze`, {
+            const res = await fetch(`${API_BASE}/api/analyze`, {
                 method: "POST",
                 body: formData,
             });
