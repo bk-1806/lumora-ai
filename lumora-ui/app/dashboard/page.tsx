@@ -1,3 +1,5 @@
+"use client"
+
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { TopHeader } from "@/components/dashboard/top-header"
 import { AtsScorePanel } from "@/components/dashboard/ats-score-panel"
