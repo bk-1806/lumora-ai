@@ -1,78 +1,90 @@
-from fastapi import APIRouter, HTTPException, Depends
-from typing import Optional
-from app.db.supabaseClient import db_client
-from app.models.schemas import SaveAnalysisRequest
+"""
+Auth router: Save analysis and fetch resume history via Supabase.
 
-router = APIRouter(tags=["Authenticated Access"])
+Endpoints:
+- POST /api/auth/save-analysis
+- GET  /api/auth/resume-history?user_id=
+"""
+from datetime import datetime
+from typing import Any, Dict, Optional
+
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
+
+from app.db.supabase_client import get_supabase
+
+router = APIRouter()
+
+TABLE = "analysis_history"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Models
+# ─────────────────────────────────────────────────────────────────────────────
+
+class SaveAnalysisRequest(BaseModel):
+    user_id: Optional[str] = None      # user.email from Supabase Auth
+    resume_name: Optional[str] = None
+    ats_score: Optional[float] = None
+    analysis_data: Optional[Dict[str, Any]] = None
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# POST /api/auth/save-analysis
+# ─────────────────────────────────────────────────────────────────────────────
 
 @router.post("/save-analysis")
-async def save_user_analysis(payload: SaveAnalysisRequest):
-    """
-    Save the analysis results mapped to the authenticated user's ID.
-    Requires Supabase user_id.
-    """
+async def save_analysis(body: SaveAnalysisRequest):
+    # Validation
+    if not body.resume_name or body.resume_name.strip() == "":
+        raise HTTPException(status_code=400, detail="resume_name is required")
+    if body.ats_score is None:
+        raise HTTPException(status_code=400, detail="ats_score is required")
+
+    client = get_supabase()
+    if client is None:
+        raise HTTPException(status_code=503, detail="Database unavailable — Supabase not configured")
+
     try:
-        # 1. First ensure the resume is saved
-        resume_res = db_client.table("resumes").insert({
-            "user_id": payload.user_id,
-            "filename": payload.filename,
-            "label": payload.label,
-            "content_text": payload.resume_text
-        }).execute()
-        
-        if not resume_res.data:
-            raise HTTPException(status_code=500, detail="Failed to save resume")
-        
-        resume_id = resume_res.data[0]['id']
-
-        # 2. Extract values for resume_analysis table
-        db_payload = {
-            "user_id": payload.user_id,
-            "resume_id": resume_id,
-            "job_description": payload.job_description,
-            "ats_score": payload.analysis_data.get("final_ats_score", 0),
-            "keyword_score": payload.analysis_data.get("keyword_score", 0),
-            "similarity_score": payload.analysis_data.get("similarity_score", 0),
-            "experience_score": payload.analysis_data.get("experience_score", 0),
-            "skill_density": payload.analysis_data.get("skill_density", 0),
-            "pass_probability": payload.analysis_data.get("pass_probability", 0),
-            "strengths": payload.analysis_data.get("strengths", []),
-            "weaknesses": payload.analysis_data.get("weaknesses", []),
-            "missing_keywords": payload.analysis_data.get("missing_keywords", []),
-            "skill_gap": payload.analysis_data.get("skill_gap", []),
-            "raw_response": payload.analysis_data # Store as JSONB
+        record = {
+            "user_id": body.user_id or "anonymous",
+            "resume_name": body.resume_name.strip(),
+            "ats_score": body.ats_score,
+            "analysis_data": body.analysis_data or {},
+            "created_at": datetime.utcnow().isoformat(),
         }
-
-        analysis_res = db_client.table("resume_analysis").insert(db_payload).execute()
-        
-        if not analysis_res.data:
-            raise HTTPException(status_code=500, detail="Failed to save analysis")
-
-        return {"status": "success", "message": "Analysis saved to Supabase", "analysis_id": analysis_res.data[0]['id']}
-    
+        result = client.table(TABLE).insert(record).execute()
+        return {"status": "success", "data": result.data}
     except Exception as e:
-        print(f"ERROR saving analysis: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+        print(f"[save-analysis] ERROR: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GET /api/auth/resume-history?user_id=
+# ─────────────────────────────────────────────────────────────────────────────
 
 @router.get("/resume-history")
-async def get_resume_history(user_id: str):
-    """
-    Fetch all analysis history for a given user.
-    """
-    try:
-        res = db_client.table("resume_analysis").select("*, resumes(filename, label)").eq("user_id", user_id).order("created_at", desc=True).execute()
-        return {"status": "success", "data": res.data}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+async def get_resume_history(user_id: Optional[str] = None):
+    # Safety: no user_id → return empty list (no crash)
+    if not user_id or user_id.strip() == "":
+        return {"status": "success", "data": []}
 
-@router.delete("/resume-analysis/{analysis_id}")
-async def delete_resume_analysis(analysis_id: str, user_id: str):
-    """
-    Delete a specific analysis iteration. RLS ensures user_id matches.
-    """
+    client = get_supabase()
+    if client is None:
+        # Graceful degradation — return empty list, don't crash
+        return {"status": "success", "data": []}
+
     try:
-        db_client.table("resume_analysis").delete().eq("id", analysis_id).eq("user_id", user_id).execute()
-        return {"status": "success", "message": "Analysis deleted."}
+        result = (
+            client.table(TABLE)
+            .select("id, user_id, resume_name, ats_score, analysis_data, created_at")
+            .eq("user_id", user_id.strip())
+            .order("created_at", desc=True)
+            .execute()
+        )
+        return {"status": "success", "data": result.data or []}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"[resume-history] ERROR: {e}")
+        # Return empty list on error rather than 500 crash
+        return {"status": "success", "data": []}

@@ -1,5 +1,5 @@
 from typing import Dict, Any, List
-
+from app.db import db_client
 from app.parsers import extract_text, parse_sections
 from app.nlp import extract_keywords_from_jd, normalize_text, extract_tech_skills
 from app.llm import (
@@ -14,7 +14,6 @@ from app.scoring import (
     calculate_keyword_match,
     calculate_semantic_similarity,
     calculate_experience_relevance,
-    calculate_skill_match,
     detect_quantification,
     calculate_skill_density,
     check_formatting_compliance,
@@ -282,6 +281,7 @@ def build_optimized_resume_text(
 # ─────────────────────────────────────────────────────────────────────────────
 
 def process_resume_analysis(
+    user_id: str,
     resume_bytes: bytes,
     resume_filename: str,
     jd_text: str
@@ -291,37 +291,46 @@ def process_resume_analysis(
 
     structured_resume = parse_sections(raw_resume)
 
+    resume_db = db_client.create_resume(user_id, raw_resume, structured_resume)
 
+
+    # JD KEYWORDS
     jd_keywords = extract_keywords_from_jd(jd_text)
+
+    jd_db = db_client.create_job_description(jd_text, jd_keywords)
 
 
     # SKILLS EXTRACTION FROM RESUME
     resume_skills = extract_tech_skills(raw_resume)
 
-    # NEW: Skill Match Score (Explicit Overlap)
-    skill_match_score = calculate_skill_match(resume_skills, jd_keywords)
 
     # KEYWORD MATCHING — full resume text for broader coverage
     keyword_match_data = calculate_keyword_match(raw_resume, jd_keywords)
 
+
     similarity_score = calculate_semantic_similarity(raw_resume, jd_text)
+
 
     exp_text = structured_resume.get("experience", "")
 
     experience_score = calculate_experience_relevance(exp_text, jd_text)
 
+
     quantification_score = detect_quantification(exp_text)
+
 
     skill_density_score = calculate_skill_density(raw_resume, resume_skills)
 
-    # NEW: Check formatting uses structured sections to penalize missing sections
-    formatting_score = check_formatting_compliance(structured_resume, raw_resume)
+
+    formatting_score = check_formatting_compliance(raw_resume)
+
 
     final_score = compute_final_ats_score(
-        semantic_similarity=similarity_score,
-        skill_match=skill_match_score,
-        experience_relevance=experience_score,
-        keyword_coverage=keyword_match_data["score"],
+        keyword_score=keyword_match_data["score"],
+        similarity_score=similarity_score,
+        experience_score=experience_score,
+        quantification_score=quantification_score,
+        skill_density_score=skill_density_score,
         formatting_score=formatting_score,
     )
 
@@ -377,22 +386,15 @@ def process_resume_analysis(
     opt_experience_score = calculate_experience_relevance(opt_exp_text, jd_text)
 
     opt_quantification_score = detect_quantification(opt_exp_text)
-    
-    # Estimate improved keyword coverage by combining original matches with newly injected keywords from bullets
-    opt_keywords = extract_keywords_from_jd(opt_exp_text)
-    opt_keyword_coverage = min(100.0, keyword_match_data["score"] + (len(opt_keywords) * 2))
-    
-    # Estimate improved skill match
-    opt_resume_skills = extract_tech_skills(optimized_text)
-    opt_skill_match_score = calculate_skill_match(opt_resume_skills, jd_keywords)
 
 
     after_score = compute_final_ats_score(
-        semantic_similarity=opt_similarity_score,
-        skill_match=opt_skill_match_score,
-        experience_relevance=opt_experience_score,
-        keyword_coverage=opt_keyword_coverage,
-        formatting_score=formatting_score,  # Formatting score remains static for simulation
+        keyword_score=keyword_match_data["score"],
+        similarity_score=opt_similarity_score,
+        experience_score=opt_experience_score,
+        quantification_score=opt_quantification_score,
+        skill_density_score=skill_density_score,
+        formatting_score=formatting_score,
     )
 
 
@@ -435,7 +437,6 @@ def process_resume_analysis(
     }
 
 
-    # Add raw resume text so frontend context has it
-    analysis_data["_resume_text"] = raw_resume
+    result = db_client.save_analysis_result(resume_db["id"], jd_db["id"], analysis_data)
 
-    return analysis_data
+    return result

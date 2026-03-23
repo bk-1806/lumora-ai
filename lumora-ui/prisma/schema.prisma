@@ -1,0 +1,29 @@
+// Prisma schema for Lumora AI (Prisma v6)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AnalysisResult {
+  id                  String   @id @default(uuid())
+  atsScore            Float
+  keywordScore        Float
+  similarityScore     Float
+  experienceScore     Float
+  quantificationScore Float
+  skillDensity        Float
+  formattingScore     Float
+  strengths           Json
+  weaknesses          Json
+  missingKeywords     Json
+  interviewQuestions  Json
+  optimizedResume     String   @db.Text
+  coverLetter         String   @db.Text
+  resumeName          String?
+  createdAt           DateTime @default(now())
+}

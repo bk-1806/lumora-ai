@@ -37,24 +37,27 @@
 
 ```
 lumora-ai/
-├── frontend/               # Next.js application
+├── lumora-ui/              # Next.js application (ONLY Frontend)
 │   ├── src/
-│   │   ├── app/            # Pages and API routes
+│   │   ├── app/            # Pages and Auth-aware routes
 │   │   ├── components/     # Dashboard and UI components
-│   │   ├── context/        # SearchContext
-│   │   ├── lib/            # Prisma singleton
+│   │   ├── context/        # Auth & SearchContext
+│   │   ├── lib/            # Supabase & Utilities
 │   │   └── types.ts        # Shared TypeScript interfaces
-│   ├── prisma/             # Prisma schema
-│   └── public/             # Static assets (Lumora logo)
+│   └── public/             # Static assets
 └── backend/                # FastAPI application
     ├── app/
     │   ├── api/            # Endpoints (/analyze, /copilot-chat)
+    │   ├── routers/        # Auth & Save endpoints
+    │   ├── db/             # Supabase Python client
     │   ├── nlp/            # Keyword extraction (spaCy)
     │   ├── llm/            # Gemini LLM engine
-    │   ├── parsers/        # PDF/DOCX resume parsers
     │   └── services/       # Core analysis pipeline
     └── requirements.txt
 ```
+
+> [!IMPORTANT]
+> **Frontend Root**: The only valid frontend directory is `lumora-ui/`. Do NOT use or create a `frontend/` folder. All Next.js development and builds must run from within `lumora-ui/`.
 
 ---
 
@@ -72,12 +75,11 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-### 2. Frontend
+### 2. Frontend (lumora-ui)
 ```bash
-cd frontend
+cd lumora-ui
 npm install
-cp .env.example .env       # Add your DATABASE_URL and API URL
-npx prisma migrate dev --name init
+cp .env.local.example .env.local  # Add Supabase keys and API URL
 npm run dev
 ```
 

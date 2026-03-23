@@ -1,4 +1,13 @@
 import os
+
+# ---------------------------------------------------
+# Deployment Safety (Railway / Serverless Environments)
+# ---------------------------------------------------
+# Force HuggingFace and SentenceTransformers to use the writable /tmp directory
+# to prevent "OSError: [Errno 30] Read-only file system" crashes during deployment boots.
+os.environ["HF_HOME"] = "/tmp/huggingface"
+os.environ["SENTENCE_TRANSFORMERS_HOME"] = "/tmp/st"
+
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,7 +21,7 @@ app = FastAPI(
 # Configure CORS for frontend access
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["*"],  # Allows all origins (e.g., Vercel frontend)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -22,13 +31,11 @@ app.add_middleware(
 def read_root():
     return {"message": "Welcome to the ResumeAI API"}
 
-@app.on_event("startup")
-async def startup():
-    print("Lumora backend started - AI models will load lazily on first request")
+from app.api import endpoints
+from app.routers import auth
 
-from app.routers import guest, auth
-
-app.include_router(guest.router, prefix="/api")
+# Include routers
+app.include_router(endpoints.router, prefix="/api")
 app.include_router(auth.router, prefix="/api/auth")
 
 
