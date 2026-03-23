@@ -73,7 +73,7 @@ export default function UploadPage() {
         formData.append("email", email);
 
         try {
-            const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+            const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, "");
             const res = await fetch(`${API_BASE}/api/analyze`, {
                 method: "POST",
                 body: formData,
@@ -98,7 +98,7 @@ export default function UploadPage() {
             // Save resume version to backend (non-blocking)
             (async () => {
                 try {
-                    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+                    const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, "");
                     await fetch(`${API_BASE}/api/resume-version`, {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },

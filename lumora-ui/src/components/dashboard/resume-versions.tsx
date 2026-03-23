@@ -36,7 +36,7 @@ export function ResumeVersions({ onOpenAnalysis }: ResumeVersionsProps) {
         return
       }
 
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+      const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
 
       try {
         const res = await fetch(
