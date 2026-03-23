@@ -82,7 +82,12 @@ export default function UploadPage() {
             if (!res.ok) {
                 const text = await res.text();
                 console.error("Analysis error:", text);
-                throw new Error("Analysis failed due to server error");
+                try {
+                    const errObj = JSON.parse(text);
+                    throw new Error(errObj.detail || "Analysis failed due to a server error.");
+                } catch (parseErr) {
+                    throw new Error(`Server Error: ${res.status} - Please check backend logs.`);
+                }
             }
 
             const data = await res.json();

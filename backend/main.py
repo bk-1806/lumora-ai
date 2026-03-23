@@ -7,6 +7,8 @@ import os
 # to prevent "OSError: [Errno 30] Read-only file system" crashes during deployment boots.
 os.environ["HF_HOME"] = "/tmp/huggingface"
 os.environ["SENTENCE_TRANSFORMERS_HOME"] = "/tmp/st"
+os.makedirs("/tmp/huggingface", exist_ok=True)
+os.makedirs("/tmp/st", exist_ok=True)
 
 import uvicorn
 from fastapi import FastAPI
