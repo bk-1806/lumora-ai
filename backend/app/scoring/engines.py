@@ -214,6 +214,12 @@ def calculate_semantic_similarity(resume_text: str, jd_text: str) -> float:
         emb1 = get_embedding(resume_text)
         emb2 = get_embedding(jd_text)
 
+        # Workaround: If JD is extremely short, sentence-transformers performs poorly 
+        # compared to lexical overlap due to dimensional noise. 
+        if len(jd_text.split()) < 20:
+            print("JD is very short. Falling back to TF-IDF for better lexical representation.")
+            return fallback_semantic_similarity(resume_text, jd_text)
+
         if emb1 is None or emb2 is None:
             print("Warning: Embedding generation failed. Falling back to TF-IDF.")
             return fallback_semantic_similarity(resume_text, jd_text)
@@ -311,8 +317,8 @@ def calculate_experience_relevance(experience_text: str, jd_text: str) -> float:
 
     if (resume_domain != "unknown" and jd_domain != "unknown"
             and resume_domain != jd_domain):
-        # Different domains — heavy penalty
-        mismatch_penalty = 40.0
+        # Different domains — partial penalty
+        mismatch_penalty = 15.0
         print(f"Domain mismatch detected: resume={resume_domain}, jd={jd_domain}. Penalty: -{mismatch_penalty}")
         score -= mismatch_penalty
 
@@ -332,13 +338,13 @@ def calculate_experience_relevance(experience_text: str, jd_text: str) -> float:
     
     # Penalize if resume is junior/intern but job is senior/lead
     if resume_level < jd_level and jd_level >= 3:
-        penalty = 30.0 * (jd_level - resume_level)
+        penalty = 10.0 * (jd_level - resume_level)
         print(f"Seniority mismatch penalty: resume level {resume_level} vs jd level {jd_level}. Penalty: -{penalty}")
         score -= penalty
     
     # Penalize if resume is overqualified (senior applying to intern)
     elif resume_level > jd_level and jd_level == 1:
-        penalty = 20.0
+        penalty = 10.0
         print("Overqualification penalty applied.")
         score -= penalty
 
