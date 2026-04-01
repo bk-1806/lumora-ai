@@ -37,8 +37,10 @@ export function SaveAnalysisModal({ result, onClose, onSaved }: SaveAnalysisModa
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           user_id: userId,
-          resume_name: resumeName.trim(),
-          ats_score: result.final_ats_score,
+          filename: resumeName.trim() || 'resume.pdf',
+          label: resumeName.trim(),
+          resume_text: result._resume_text || result.resume_text || '',
+          job_description: result.job_description || '',
           analysis_data: result,
         }),
       })

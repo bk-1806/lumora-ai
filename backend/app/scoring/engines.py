@@ -188,6 +188,21 @@ def calculate_skill_match(resume_skills: List[str], jd_keywords: List[str]) -> f
 # Semantic Similarity
 # ---------------------------------------------------
 
+def fallback_semantic_similarity(resume_text: str, jd_text: str) -> float:
+    try:
+        from sklearn.feature_extraction.text import TfidfVectorizer
+        vectorizer = TfidfVectorizer(stop_words='english')
+        tfidf = vectorizer.fit_transform([resume_text, jd_text])
+        sim_matrix = cosine_similarity(tfidf[0:1], tfidf[1:2])
+        raw_score = max(0.0, float(sim_matrix[0][0]))
+        score = raw_score * 100
+        if raw_score > 0.05 and score < 5.0:
+            score = 5.0
+        return round(score, 2)
+    except Exception as e:
+        print("TF-IDF fallback error:", e)
+        return 0.0
+
 def calculate_semantic_similarity(resume_text: str, jd_text: str) -> float:
     print("Resume length:", len(resume_text) if resume_text else 0)
     print("JD length:", len(jd_text) if jd_text else 0)
@@ -200,8 +215,8 @@ def calculate_semantic_similarity(resume_text: str, jd_text: str) -> float:
         emb2 = get_embedding(jd_text)
 
         if emb1 is None or emb2 is None:
-            print("Warning: Embedding generation failed. Returning 0.0")
-            return 0.0
+            print("Warning: Embedding generation failed. Falling back to TF-IDF.")
+            return fallback_semantic_similarity(resume_text, jd_text)
 
         sim_matrix = cosine_similarity([emb1], [emb2])
         raw_score = max(0.0, float(sim_matrix[0][0]))
@@ -214,7 +229,7 @@ def calculate_semantic_similarity(resume_text: str, jd_text: str) -> float:
         return similarity_score
     except Exception as e:
         print("Similarity engine error:", e)
-        return 0.0
+        return fallback_semantic_similarity(resume_text, jd_text)
 
 
 # ---------------------------------------------------
