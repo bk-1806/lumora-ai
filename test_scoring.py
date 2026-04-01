@@ -1,61 +1,23 @@
-import asyncio
-import os
 import sys
+import os
 
-# Add the backend directory to python path for imports
-sys.path.append(os.path.join(os.path.dirname(__file__), "backend"))
+sys.path.append("/Users/bhavankothalanka/lumora-ai/backend")
+from app.scoring.engines import calculate_semantic_similarity, calculate_experience_relevance, fallback_semantic_similarity
 
-from app.scoring.engines import calculate_semantic_similarity, calculate_experience_relevance
+resume_text = "I am an experienced ai engineer. I have worked on machine learning and artificial intelligence for 5 years."
+jd_text = "ai engineer"
 
-data_analyst_resume = """
-John Doe
-Data Analyst
-johndoe@email.com
+print("Resume Length:", len(resume_text))
+print("JD Length:", len(jd_text))
 
-SUMMARY
-Data Analyst with 4 years of experience analyzing large datasets, creating dashboards, and providing actionable business insights.
+sim1 = fallback_semantic_similarity(resume_text, jd_text)
+print("TF-IDF Fallback Semantic Similarity:", sim1)
 
-EXPERIENCE
-Data Analyst | Tech Corp | 2020 - 2024
-- Analyzed 1M+ rows of sales data using SQL and Python (Pandas).
-- Created interactive Tableau dashboards for executive reporting.
-- Improved data pipeline efficiency by 15%.
+try:
+    sim2 = calculate_semantic_similarity(resume_text, jd_text)
+    print("Normal Semantic Similarity:", sim2)
+except Exception as e:
+    print("Normal Semantic Similarity error:", e)
 
-SKILLS
-SQL, Python, Tableau, Excel, Data Analysis, Pandas
-"""
-
-data_analyst_jd = """
-Looking for a Data Analyst to join our team.
-Requirements:
-- 3+ years of experience in data analysis.
-- Strong SQL and Python skills.
-- Experience with visualization tools like Tableau or PowerBI.
-- Ability to analyze complex datasets and present findings.
-"""
-
-cloud_architect_jd = """
-We are hiring a Senior Cloud Architect.
-Requirements:
-- 8+ years of experience in cloud infrastructure.
-- Expert in AWS, Azure, and GCP.
-- Experience designing scalable microservices architectures.
-- Deep knowledge of Kubernetes, Docker, and CI/CD pipelines.
-"""
-
-def test_scoring():
-    print("--- Case 1: Resume vs Data Analyst JD ---")
-    sim1 = calculate_semantic_similarity(data_analyst_resume, data_analyst_jd)
-    exp1 = calculate_experience_relevance(data_analyst_resume.split("EXPERIENCE")[1], data_analyst_jd)
-    print(f"Similarity Score: {sim1} (Expected > 60)")
-    print(f"Experience Score: {exp1}\n")
-
-    print("--- Case 2: Resume vs Cloud Architect JD ---")
-    sim2 = calculate_semantic_similarity(data_analyst_resume, cloud_architect_jd)
-    exp2 = calculate_experience_relevance(data_analyst_resume.split("EXPERIENCE")[1], cloud_architect_jd)
-    print(f"Similarity Score: {sim2} (Expected 20-40)")
-    print(f"Experience Score: {exp2}\n")
-
-if __name__ == "__main__":
-    test_scoring()
-
+exp_rel = calculate_experience_relevance(resume_text, jd_text)
+print("Experience Relevance:", exp_rel)

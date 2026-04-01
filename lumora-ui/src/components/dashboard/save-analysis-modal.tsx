@@ -17,12 +17,17 @@ export function SaveAnalysisModal({ result, onClose, onSaved }: SaveAnalysisModa
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // user_id = user.email from Supabase Auth
-  const userId = user?.email ?? "anonymous"
+  // user_id = user.id from Supabase Auth (UUID required for backend)
+  const userId = user?.id ?? ""
 
   const handleSave = async () => {
     if (!resumeName.trim()) {
       setError("Please enter a resume name.")
+      return
+    }
+
+    if (!userId) {
+      setError("You must be logged in to save an analysis.")
       return
     }
 

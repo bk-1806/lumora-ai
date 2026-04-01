@@ -8,8 +8,12 @@ def get_supabase() -> Client:
     if _db_client is not None:
         return _db_client
         
-    url = settings.SUPABASE_URL
+    url = settings.SUPABASE_URL or "https://qdoagbhqjmmvvyjkpjdf.supabase.co"
     key = settings.SUPABASE_KEY
+    
+    # Fix for user accidentally pasting a mock publishable key in Render
+    if not key or key.startswith("sb_publishable_"):
+        key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkb2FnYmhxam1tdnZ5amtwamRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3Mjg2ODEsImV4cCI6MjA4ODMwNDY4MX0.ET6z-CsmMxw_chri6qcyinAs9tmdEBAlA7n38rfFsFI"
     
     if not url or not key:
         print(f"CRITICAL: Supabase credentials missing. URL=['{url}'], Key Length={len(key) if key else 0}")

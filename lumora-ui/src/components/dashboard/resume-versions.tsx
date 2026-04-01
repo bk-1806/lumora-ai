@@ -23,8 +23,8 @@ export function ResumeVersions({ onOpenAnalysis }: ResumeVersionsProps) {
   const [versions, setVersions] = useState<SavedAnalysis[]>([])
   const [loading, setLoading] = useState(true)
 
-  // user_id = user.email from Supabase Auth
-  const userId = user?.email ?? null
+  // user_id = user.id from Supabase Auth (UUID)
+  const userId = user?.id ?? null
 
   useEffect(() => {
     const fetchVersions = async () => {

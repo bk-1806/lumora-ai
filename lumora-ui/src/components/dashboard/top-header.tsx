@@ -17,8 +17,8 @@ export function TopHeader() {
   const router = useRouter()
   const [hasNewNotification, setHasNewNotification] = useState(true)
 
-  // user_id = user.email (from Supabase Auth)
-  const userId = user?.email ?? null
+  // user_id = user.id (from Supabase Auth, must be UUID)
+  const userId = user?.id ?? null
   const initials = userId ? userId.charAt(0).toUpperCase() : 'LA'
 
   const handleLogout = async () => {

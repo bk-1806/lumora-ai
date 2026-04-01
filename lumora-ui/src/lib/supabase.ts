@@ -1,7 +1,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://qdoagbhqjmmvvyjkpjdf.supabase.co'
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkb2FnYmhxam1tdnZ5amtwamRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3Mjg2ODEsImV4cCI6MjA4ODMwNDY4MX0.ET6z-CsmMxw_chri6qcyinAs9tmdEBAlA7n38rfFsFI'
 
 // Safe: only create client if env vars are present
 // During build/SSR without env vars, supabase will be null
