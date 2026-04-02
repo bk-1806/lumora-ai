@@ -18,13 +18,17 @@ Experience Lumora AI in action:
 
 ## 📸 Screenshots
 
-| Dashboard                                 | Analysis Result                         |
+| Dashboard Overview | Analysis — Strengths & Weaknesses |
 | ----------------------------------------- | --------------------------------------- |
 | ![Dashboard](./screenshots/dashboard.png) | ![Analysis](./screenshots/analysis.png) |
 
-| Resume History                        | Resume Copilot                        |
-| ------------------------------------- | ------------------------------------- |
-| ![History](./screenshots/history.png) | ![Copilot](./screenshots/copilot.png) |
+| Optimized Resume & Cover Letter | ATS Upload Simulation |
+| ------------------------------- | --------------------- |
+| ![Optimized Resume](./screenshots/optimized-resume.png) | ![Upload](./screenshots/upload.png) |
+
+| Save Analysis Modal | Resume History |
+| ------------------- | -------------- |
+| ![Save Modal](./screenshots/save-modal.png) | ![History](./screenshots/history.png) |
 
 ---
 
