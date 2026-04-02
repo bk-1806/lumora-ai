@@ -18,18 +18,17 @@ Experience Lumora AI in action:
 
 ## 📸 Screenshots
 
-| Dashboard Overview | Analysis — Strengths & Weaknesses |
-| ----------------------------------------- | --------------------------------------- |
-| ![Dashboard](./screenshots/dashboard.png) | ![Analysis](./screenshots/analysis.png) |
+| Analysis — Strengths & Weaknesses | Optimized Resume & Cover Letter |
+| -------------------------------- | -------------------------------- |
+| ![Analysis](./screenshots/analysis.png) | ![Optimized Resume](./screenshots/optimized-resume.png) |
 
-| Optimized Resume & Cover Letter | ATS Upload Simulation |
-| ------------------------------- | --------------------- |
-| ![Optimized Resume](./screenshots/optimized-resume.png) | ![Upload](./screenshots/upload.png) |
+| ATS Upload Simulation | Save Analysis Modal |
+| --------------------- | ------------------- |
+| ![Upload](./screenshots/upload.png) | ![Save Modal](./screenshots/save-modal.png) |
 
-| Save Analysis Modal | Resume History |
-| ------------------- | -------------- |
-| ![Save Modal](./screenshots/save-modal.png) | ![History](./screenshots/history.png) |
-
+| Dashboard Overview | Resume History |
+| ------------------ | -------------- |
+| ![Dashboard](./screenshots/dashboard.png) | ![History](./screenshots/history.png) |
 ---
 
 ## 🚀 Features
