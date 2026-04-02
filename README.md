@@ -1,5 +1,9 @@
 # Lumora AI
 
+![GitHub stars](https://img.shields.io/github/stars/your-username/lumora-ai?style=social)
+![GitHub forks](https://img.shields.io/github/forks/your-username/lumora-ai?style=social)
+![License](https://img.shields.io/badge/license-MIT-blue)
+
 ### AI-powered resume intelligence platform for the modern recruiter and candidate.
 
 ---
@@ -7,20 +11,20 @@
 ## 🌐 Live Demo
 
 Experience Lumora AI in action:
-* **Frontend:** [https://<your-vercel-url>](https://<your-vercel-url>)
-* **Backend:** [https://<your-render-url>](https://<your-render-url>)
+* **Frontend:** [https://lumora-ai-peach.vercel.app/](https://lumora-ai-peach.vercel.app/)
+* **Backend:** [https://lumora-backend-v1v3.onrender.com](https://lumora-backend-v1v3.onrender.com)
 
 ---
 
 ## 📸 Screenshots
 
-| Dashboard | Analysis Result |
-|-----------|-----------------|
-| ![Dashboard Placeholder](https://via.placeholder.com/800x450?text=Dashboard+Overview) | ![Analysis Result Placeholder](https://via.placeholder.com/800x450?text=Detailed+Analysis+Report) |
+| Dashboard                                 | Analysis Result                         |
+| ----------------------------------------- | --------------------------------------- |
+| ![Dashboard](./screenshots/dashboard.png) | ![Analysis](./screenshots/analysis.png) |
 
-| Resume History | Resume Copilot |
-|-----------|-----------------|
-| ![Resume History Placeholder](https://via.placeholder.com/800x450?text=User+History+Dashboard) | ![Resume Copilot Placeholder](https://via.placeholder.com/800x450?text=AI+Chat+Interface) |
+| Resume History                        | Resume Copilot                        |
+| ------------------------------------- | ------------------------------------- |
+| ![History](./screenshots/history.png) | ![Copilot](./screenshots/copilot.png) |
 
 ---
 
@@ -110,7 +114,7 @@ npm run dev
 ```env
 GROQ_API_KEY=your_groq_api_key
 SUPABASE_URL=your_supabase_url
-SUPABASE_KEY=your_supabase_anon_key
+SUPABASE_KEY=your_supabase_service_role_key
 GOOGLE_API_KEY=your_google_gemini_key
 ```
 
