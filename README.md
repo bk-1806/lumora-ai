@@ -1,105 +1,154 @@
 # Lumora AI
 
-**AI-powered resume intelligence platform** that analyzes resumes against job descriptions, generates ATS scores, skill gap insights, interview preparation questions, and optimized resume suggestions.
+### AI-powered resume intelligence platform for the modern recruiter and candidate.
+
+---
+
+## 🌐 Live Demo
+
+Experience Lumora AI in action:
+* **Frontend:** [https://<your-vercel-url>](https://<your-vercel-url>)
+* **Backend:** [https://<your-render-url>](https://<your-render-url>)
+
+---
+
+## 📸 Screenshots
+
+| Dashboard | Analysis Result |
+|-----------|-----------------|
+| ![Dashboard Placeholder](https://via.placeholder.com/800x450?text=Dashboard+Overview) | ![Analysis Result Placeholder](https://via.placeholder.com/800x450?text=Detailed+Analysis+Report) |
+
+| Resume History | Resume Copilot |
+|-----------|-----------------|
+| ![Resume History Placeholder](https://via.placeholder.com/800x450?text=User+History+Dashboard) | ![Resume Copilot Placeholder](https://via.placeholder.com/800x450?text=AI+Chat+Interface) |
 
 ---
 
 ## 🚀 Features
 
-- **ATS Score Analysis** – Deep scoring across keyword match, semantic similarity, experience, quantification, and formatting
-- **Skill Gap Detection** – Identifies missing keywords from the job description
-- **Resume Optimization** – AI-rewrites weak bullet points and generates an enhanced resume
-- **Cover Letter Generation** – Auto-generates a tailored cover letter
-- **Interview Preparation** – Generates targeted interview questions based on the role
-- **Resume Copilot** – Live AI chat to refine your resume interactively
-- **Resume History** – Stores and retrieves past analysis sessions from a Supabase database
-- **Dashboard Search** – Search across all analysis sections with live highlighting
+*   **⚡ ATS Score Engine** – Proprietary scoring algorithm analyzing keyword density, semantic relevance, and formatting.
+*   **🤖 AI Resume Optimization** – Powered by Google Gemini to rewrite bullet points for maximum impact.
+*   **🔍 Skill Gap Detection** – Instant identification of missing hard and soft skills based on job descriptions.
+*   **💬 Resume Copilot Chat** – Real-time AI consultation to refine your resume interactively.
+*   **📜 Resume History** – Secure storage and retrieval of past analysis sessions.
+*   **📝 Cover Letter Generator** – Auto-generated, tailored cover letters matching the specific role.
+*   **🎯 Interview Preparation** – AI-curated interview questions based on the candidate's profile and the target job.
 
 ---
 
-## 🧱 Tech Stack
+## 🛠 Tech Stack
 
 ### Frontend
-- **Next.js 16** (App Router)
-- **Tailwind CSS** + **shadcn/ui**
-- **Recharts** for radar/bar chart analytics
-- **Prisma v6** ORM with **Supabase (PostgreSQL)**
+- **Framework:** Next.js (App Router)
+- **Styling:** Tailwind CSS
+- **UI Components:** shadcn/ui
+- **Analytics Visualization:** Recharts
 
 ### Backend
-- **FastAPI** (Python)
-- **spaCy** for NLP keyword extraction
-- **Google Gemini** for LLM-based resume optimization
-- **sentence-transformers** for semantic similarity scoring
+- **Framework:** FastAPI (Python)
+
+### AI/ML
+- **NLP Engine:** spaCy
+- **Embeddings:** sentence-transformers
+- **LLM:** Google Gemini API
+
+### Database & Infrastructure
+- **Database:** Supabase (PostgreSQL)
+- **Deployment:** Vercel (Frontend), Render (Backend)
 
 ---
 
-## 📁 Project Structure
+## 🏗 Architecture
 
-```
-lumora-ai/
-├── frontend/               # Next.js application
-│   ├── src/
-│   │   ├── app/            # Pages and API routes
-│   │   ├── components/     # Dashboard and UI components
-│   │   ├── context/        # SearchContext
-│   │   ├── lib/            # Prisma singleton
-│   │   └── types.ts        # Shared TypeScript interfaces
-│   ├── prisma/             # Prisma schema
-│   └── public/             # Static assets (Lumora logo)
-└── backend/                # FastAPI application
-    ├── app/
-    │   ├── api/            # Endpoints (/analyze, /copilot-chat)
-    │   ├── nlp/            # Keyword extraction (spaCy)
-    │   ├── llm/            # Gemini LLM engine
-    │   ├── parsers/        # PDF/DOCX resume parsers
-    │   └── services/       # Core analysis pipeline
-    └── requirements.txt
-```
+Lumora AI follows a modern decoupled architecture:
+
+1.  **Frontend (Next.js):** Handles the user interface, file uploads (PDF/Docx), and visual analytics. It communicates directly with **Supabase** for user authentication and session management.
+2.  **Backend (FastAPI):** The core intelligence layer. It processes resumes, runs the NLP pipeline (keyword extraction & semantic scoring), and manages interactions with Google Gemini.
+3.  **Supabase:** Serves as the central data store for user profiles, analysis history, and metadata.
+
+**Architecture Flow:**
+`User` ⇄ `Frontend` ⇄ `Backend` ⇄ `Supabase`
 
 ---
 
-## ⚙️ Setup
+## ⚙️ Setup Instructions
 
-### Prerequisites
-- Node.js 20+, Python 3.10+, Git
-
-### 1. Backend
+### 1. Backend Setup
 ```bash
+# Navigate to backend directory
 cd backend
+
+# Create and activate virtual environment
 python -m venv venv
-venv\Scripts\activate       # Windows
+source venv/bin/activate  # macOS/Linux
+# venv\Scripts\activate   # Windows
+
+# Install dependencies
 pip install -r requirements.txt
+
+# Start the server
 uvicorn app.main:app --reload
 ```
 
-### 2. Frontend
+### 2. Frontend Setup
 ```bash
-cd frontend
-npm install
-cp .env.example .env       # Add your DATABASE_URL and API URL
-npx prisma migrate dev --name init
-npm run dev
-```
+# Navigate to frontend directory
+cd lumora-ui
 
-### 3. Environment Variables
-Create `frontend/.env`:
-```env
-DATABASE_URL="postgresql://user:password@host:5432/postgres"
-NEXT_PUBLIC_API_URL="http://localhost:8000"
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
 ```
 
 ---
 
-## 🌐 Deployment
+## 🔑 Environment Variables
 
-| Service | Platform |
-|---------|----------|
-| Frontend | [Vercel](https://vercel.com) |
-| Backend | [Render](https://render.com) or [Railway](https://railway.app) |
-| Database | [Supabase](https://supabase.com) PostgreSQL |
+### Backend (`backend/.env`)
+```env
+GROQ_API_KEY=your_groq_api_key
+SUPABASE_URL=your_supabase_url
+SUPABASE_KEY=your_supabase_anon_key
+GOOGLE_API_KEY=your_google_gemini_key
+```
+
+### Frontend (`lumora-ui/.env.local`)
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_API_URL=http://localhost:8000
+```
+
+---
+
+## 📈 Example Output
+
+**ATS Score Analysis Summary:**
+
+| Metric | Score | Status |
+|--------|-------|--------|
+| **Overall ATS Match** | **85/100** | ✅ Highly Compatible |
+| Semantic Similarity | 92% | Excellent |
+| Keyword Match | 78% | Good |
+| Experience Relevance | 88% | Strong |
+| Quantification | 65% | Needs Improvement |
+
+---
+
+## 💡 Why Lumora AI?
+
+In today's job market, over **75% of resumes** are filtered out by automated systems before they ever reach a human recruiter. Lumora AI bridges this gap by providing:
+
+*   **Transparency:** See exactly how an ATS views your resume.
+*   **Precision:** Move beyond keyword stuffing with deep semantic analysis.
+*   **Efficiency:** Get instant feedback and AI-powered rewrites in seconds.
+
+Lumora AI empowers candidates to optimize their profiles for the algorithms of tomorrow.
 
 ---
 
 ## 📄 License
 
-MIT
+This project is licensed under the **MIT License**.
