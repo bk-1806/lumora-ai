@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 class ConversationMessage(BaseModel):
     role: str
@@ -31,4 +31,4 @@ class SaveAnalysisRequest(BaseModel):
     label: str
     resume_text: str
     job_description: str
-    analysis_data: dict
+    analysis_data: Dict[str, Any]

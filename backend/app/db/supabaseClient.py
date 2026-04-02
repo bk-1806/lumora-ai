@@ -8,12 +8,14 @@ def get_supabase() -> Client:
     if _db_client is not None:
         return _db_client
         
-    url = settings.SUPABASE_URL or "https://qdoagbhqjmmvvyjkpjdf.supabase.co"
-    key = settings.SUPABASE_KEY
+    url = settings.SUPABASE_URL or ""
+    key = settings.SUPABASE_KEY or ""
     
-    # Fix for user accidentally pasting a mock publishable key in Render
+    # Reject mock/publishable keys that won't work for server-side writes
     if not key or key.startswith("sb_publishable_"):
-        key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkb2FnYmhxam1tdnZ5amtwamRmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI3Mjg2ODEsImV4cCI6MjA4ODMwNDY4MX0.ET6z-CsmMxw_chri6qcyinAs9tmdEBAlA7n38rfFsFI"
+        print("CRITICAL: SUPABASE_KEY is missing or is a mock publishable key.")
+        print("Set SUPABASE_KEY to your Supabase SERVICE ROLE key in Render environment variables.")
+        raise ValueError("SUPABASE_KEY must be the service role key, not the anon/publishable key.")
     
     if not url or not key:
         print(f"CRITICAL: Supabase credentials missing. URL=['{url}'], Key Length={len(key) if key else 0}")
@@ -22,7 +24,9 @@ def get_supabase() -> Client:
     try:
         # Standardize URL (remove trailing slashes or spaces)
         url = url.strip().rstrip("/")
+        print(f"Initializing Supabase client. URL: {url[:30]}..., Key starts with: {key[:15]}...")
         _db_client = create_client(url, key)
+        print("Supabase client initialized successfully.")
         return _db_client
     except Exception as e:
         print(f"CRITICAL: Failed to initialize Supabase client with URL: '{url}'")
@@ -34,6 +38,7 @@ def get_supabase() -> Client:
 # but catch the error so the import itself doesn't crash the uvicorn process
 try:
     db_client = get_supabase()
-except Exception:
+except Exception as e:
     db_client = None
-    print("Warning: db_client initialized to None due to invalid credentials. Check logs.")
+    print(f"Warning: db_client initialized to None. Reason: {e}")
+    print("Check your SUPABASE_URL and SUPABASE_KEY environment variables on Render.")

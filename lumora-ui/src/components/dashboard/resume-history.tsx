@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { AnalysisResult } from "@/types"
 import { cn } from "@/lib/utils"
 import { FileText, Clock, ChevronRight } from "lucide-react"
+import { useAuth } from "@/context/auth-context"
 
 interface HistoryItem {
     id: string
@@ -11,6 +12,7 @@ interface HistoryItem {
     resume_name: string | null
     created_at: string
     result: AnalysisResult
+    analysis_data: AnalysisResult
 }
 
 interface ResumeHistoryProps {
@@ -18,26 +20,44 @@ interface ResumeHistoryProps {
 }
 
 export function ResumeHistory({ onSelect }: ResumeHistoryProps) {
+    const { user } = useAuth()
     const [history, setHistory] = useState<HistoryItem[]>([])
     const [loading, setLoading] = useState(true)
     const [selectedId, setSelectedId] = useState<string | null>(null)
 
+    const userId = user?.id ?? null
+
     useEffect(() => {
-        const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-        fetch(`${API_BASE}/api/resume-history`)
+        if (!userId) {
+            setHistory([])
+            setLoading(false)
+            return
+        }
+
+        const API_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '')
+        console.log('[resume-history] Fetching history for user_id:', userId)
+
+        fetch(`${API_BASE}/api/auth/resume-history?user_id=${encodeURIComponent(userId)}`)
             .then((r) => r.json())
             .then((res) => {
+                console.log('[resume-history] Response:', res)
                 if (res.data) setHistory(res.data)
             })
-            .catch(console.error)
+            .catch((err) => console.error('[resume-history] Fetch error:', err))
             .finally(() => setLoading(false))
-    }, [])
+    }, [userId])
 
     if (loading) {
         return (
             <div className="flex justify-center py-4">
                 <div className="size-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             </div>
+        )
+    }
+
+    if (!userId) {
+        return (
+            <p className="px-3 py-2 text-xs text-muted-foreground">Sign in to see your history.</p>
         )
     }
 
@@ -54,13 +74,15 @@ export function ResumeHistory({ onSelect }: ResumeHistoryProps) {
                 const label = item.resume_name || `Resume Scan`
                 const score = Math.round(item.ats_score)
                 const isActive = selectedId === item.id
+                // analysis_data is the field returned by the new backend
+                const resultData = item.analysis_data || item.result
 
                 return (
                     <button
                         key={item.id}
                         onClick={() => {
                             setSelectedId(item.id)
-                            onSelect(item.result)
+                            if (resultData) onSelect(resultData)
                         }}
                         className={cn(
                             "group w-full rounded-lg px-3 py-2 text-left transition-all duration-200",

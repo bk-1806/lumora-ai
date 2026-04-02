@@ -36,18 +36,26 @@ export function SaveAnalysisModal({ result, onClose, onSaved }: SaveAnalysisModa
 
     const API_BASE = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
 
+    const requestBody = {
+      user_id: userId,
+      filename: resumeName.trim() || 'resume.pdf',
+      label: resumeName.trim(),
+      resume_text: result._resume_text || result.resume_text || '',
+      job_description: result.job_description || '',
+      analysis_data: result,
+    };
+
+    // Debug logs — confirm values before sending
+    console.log('[save-analysis] user:', user);
+    console.log('[save-analysis] userId:', userId);
+    console.log('[save-analysis] request body:', requestBody);
+    console.log('[save-analysis] API URL:', `${API_BASE}/api/auth/save-analysis`);
+
     try {
       const res = await fetch(`${API_BASE}/api/auth/save-analysis`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: userId,
-          filename: resumeName.trim() || 'resume.pdf',
-          label: resumeName.trim(),
-          resume_text: result._resume_text || result.resume_text || '',
-          job_description: result.job_description || '',
-          analysis_data: result,
-        }),
+        body: JSON.stringify(requestBody),
       })
 
       if (!res.ok) {
