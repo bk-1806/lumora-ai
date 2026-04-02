@@ -18,7 +18,7 @@ Experience Lumora AI in action:
 
 ## 📸 Screenshots
 
-| Analysis — Strengths & Weaknesses | Optimized Resume & Cover Letter |
+| Optimized Resume & Cover Letter | Analysis — Strengths & Weaknesses |
 | -------------------------------- | -------------------------------- |
 | ![Analysis](./screenshots/analysis.png) | ![Optimized Resume](./screenshots/optimized-resume.png) |
 
@@ -26,9 +26,10 @@ Experience Lumora AI in action:
 | --------------------- | ------------------- |
 | ![Upload](./screenshots/upload.png) | ![Save Modal](./screenshots/save-modal.png) |
 
-| Dashboard Overview | Resume History |
+| Dashboard Overview | Landing page |
 | ------------------ | -------------- |
 | ![Dashboard](./screenshots/dashboard.png) | ![History](./screenshots/history.png) |
+
 ---
 
 ## 🚀 Features
